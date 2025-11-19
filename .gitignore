@@ -1,0 +1,30 @@
+# Simulation files
+*.vcd
+*.vvp
+*.log
+*.jou
+
+# Vivado/Xilinx files
+*.cache/
+*.hw/
+*.ip_user_files/
+*.runs/
+*.sim/
+*.xpr
+*.str
+*.zip
+*.backup*
+
+# Build outputs
+*.bit
+*.bin
+*.mcs
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*~
+*.swp
+*.swo
