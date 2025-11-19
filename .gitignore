@@ -3,6 +3,7 @@
 *.vvp
 *.log
 *.jou
+build/
 
 # Vivado/Xilinx files
 *.cache/
