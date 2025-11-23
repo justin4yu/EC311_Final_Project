@@ -28,7 +28,20 @@ module debouncer (
 );
 
     // Safe bounce time
-    parameter bounceTimeUpperbound = 21'd2000000;
+    parameter bounceTimeUpperbound = 21'd2000000; //Hard-encoded, can adjust if needed
+
+    // Adding a safe glitch fitler
+    reg sync1, sync2;
+    always @(posedge clock or negedge reset) begin
+        if (!reset) begin
+            sync1 <= 1'b0;
+            sync2 <= 1'b0;
+        end else begin
+            sync1 <= buttonIn;
+            sync2 <= sync1; // delayed sampling to account for buttonIn during posedge clock
+        end
+    end
+    wire buttonSync = sync2;
     
     reg [20:0] count;       
     reg        previousState;       
@@ -46,7 +59,7 @@ module debouncer (
             buttonOut <= 1'b0;
             
             // Check if the physical button input has changed since the previous cycle
-            if (buttonIn != currentState) begin 
+            if (buttonSync != currentState) begin 
                 // If it changed, indicates either noise or just pressed/released
                 count <= 21'd0;
                 currentState <= buttonIn;
@@ -59,11 +72,11 @@ module debouncer (
             end else begin 
                 
                 // Surpassed upperbound, now checking to see if it was a long press (if different than previous state)
-                if (buttonIn == 1'b1 && previousState == 1'b0) begin
+                if (buttonSync == 1'b1 && previousState == 1'b0) begin
                     buttonOut <= 1'b1; 
                 end
                 
-                previousState <= buttonIn;
+                previousState <= buttonSync;
             end
         end
     end
