@@ -8,7 +8,10 @@ module top_whackamole (
     output wire [4:0]  moleLED       // 5 LEDs for moles respectively
 );
 
+    // ----------------------------------------------------------------
     // 1) Setup all Clock Dividers (1Hz, 1kHz)
+    // ----------------------------------------------------------------
+    // 1Hz clock for mole appearance timing
     wire incrementClock;
     clock_divider #(
         .DIVIDE_BY(100_000_000) // divide by 100 million for 1Hz clock (reconfig default param)
@@ -16,6 +19,16 @@ module top_whackamole (
         .clk_in(clock),
         .reset(reset),
         .clk_out(incrementClock)
+    );
+
+    // 1kHz clock for segment display 
+    wire displayClock;
+    clock_divider #(
+        .DIVIDE_BY(100_000) // divide by 100 thousand for 1kHz clock (reconfig default param)
+    ) clk_div_inst (
+        .clk_in(clock),
+        .reset(reset),
+        .clk_out(displayClock)
     );
 
 endmodule
