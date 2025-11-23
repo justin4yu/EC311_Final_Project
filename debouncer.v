@@ -62,7 +62,7 @@ module debouncer (
             if (buttonSync != currentState) begin 
                 // If it changed, indicates either noise or just pressed/released
                 count <= 21'd0;
-                currentState <= buttonIn;
+                currentState <= buttonSync;
             
             // If nothing has happened and has not reached 2ms cycle, keep the counter going
             end else if (count < bounceTimeUpperbound) begin 
