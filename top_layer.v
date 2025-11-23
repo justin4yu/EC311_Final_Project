@@ -14,8 +14,8 @@ module top_whackamole (
     // 1Hz clock for mole appearance timing
     wire incrementClock;
     clock_divider #(
-        .DIVIDE_BY(100_000_000) // divide by 100 million for 1Hz clock (reconfig default param)
-    ) clk_div_inst (
+        .divisor(100_000_000) // divide by 100 million for 1Hz clock (reconfig default param)
+    ) div_1Hz (
         .clk_in(clock),
         .reset(reset),
         .clk_out(incrementClock)
@@ -24,8 +24,8 @@ module top_whackamole (
     // 1kHz clock for segment display 
     wire displayClock;
     clock_divider #(
-        .DIVIDE_BY(100_000) // divide by 100 thousand for 1kHz clock (reconfig default param)
-    ) clk_div_inst (
+        .divisor(100_000) // divide by 100 thousand for 1kHz clock (reconfig default param)
+    ) div_1kHz (
         .clk_in(clock),
         .reset(reset),
         .clk_out(displayClock)
