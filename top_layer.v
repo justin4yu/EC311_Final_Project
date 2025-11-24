@@ -16,9 +16,9 @@ module top_whackamole (
     clock_divider #(
         .divisor(100_000_000) // divide by 100 million for 1Hz clock (reconfig default param)
     ) div_1Hz (
-        .clk_in(clock),
+        .clkIn(clock),
         .reset(reset),
-        .clk_out(incrementClock)
+        .clkOut(incrementClock)
     );
 
     // 1kHz clock for segment display 
@@ -26,9 +26,34 @@ module top_whackamole (
     clock_divider #(
         .divisor(100_000) // divide by 100 thousand for 1kHz clock (reconfig default param)
     ) div_1kHz (
-        .clk_in(clock),
+        .clkIn(clock),
         .reset(reset),
-        .clk_out(displayClock)
+        .clkOut(displayClock)
     );
+
+    // ----------------------------------------------------------------
+    // 2) Debouncer setup + Initialize 5 mole buttons
+    // ----------------------------------------------------------------
+    wire startPulse; 
+    debouncer start_debouncer (
+        .clock(clock),
+        .reset(reset),
+        .buttonIn(startButton),
+        .buttonOut(startPulse)
+    );
+
+    // Create a 5-bit wire to hold all 5 debounced mole button signals
+    wire [4:0] moleButtonPulses;
+    genvar moleIdx;
+    generate // Equivalent to 5 debouncers for the 5 mole buttons
+        for (moleIdx = 0; moleIdx < 5; moleIdx = moleIdx + 1) begin : moleButtonDebouncers
+            debouncer mole_debouncer (
+                .clock(clock),
+                .reset(reset),
+                .buttonIn(moleButton[moleIdx]),
+                .buttonOut(moleButtonPulses[moleIdx])
+            );
+        end
+    endgenerate
 
 endmodule

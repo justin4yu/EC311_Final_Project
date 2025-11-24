@@ -1,6 +1,6 @@
 // **parameter set is only for default**
 module clock_divider #(parameter divisor = 100_000_000)(
-    input  wire        clock,     // 100MHz clock from FPGA
+    input  wire        clkIn,     // 100MHz clock from FPGA
     input  wire        reset,     // **Self reminder: Active-low reset
     output reg         clkOut     // clock output
 );
