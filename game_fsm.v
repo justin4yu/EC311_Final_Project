@@ -27,27 +27,34 @@ module game_fsm #(parameter game_timer = 30)(
     end
 
     // State transitions
-    always @(*) begin
-       next_state = current_state;
-       case (current_state) // Game can only transition in the following ways unless reset has been pressed
-            IDLE: begin
-                 if (startGame) begin
-                    next_state = RUNNING;
-                 end
-            end
-            RUNNING: begin
-                 if (timer_expired) begin
-                    next_state = FINISH;
-                 end
-            end
-            FINISH: begin
-                 if (reset) begin
-                    next_state = IDLE;
-                 end
-            end
+    always @(posedge clkIn or negedge reset) begin
+        if (!reset) begin
+            current_state <= IDLE;
+            score         <= 6'd0;
+            game_active   <= 1'b0;
+        end else begin
+            current_state <= next_state;
+            case (current_state) // Game can only transition in the following ways unless reset has been pressed
+                IDLE: begin
+                    if (startGame) begin
+                        next_state = RUNNING;
+                    end
+                end
+                RUNNING: begin
+                    if (timer_expired) begin
+                        next_state = FINISH;
+                    end
+                end
+                FINISH: begin
+                    if (reset) begin
+                        next_state = IDLE;
+                    end
+                end
 
-            default: next_state = IDLE; // At reset, always start with IDLE state requiring user start input
-        endcase
+                default: next_state = IDLE; // At reset, always start with IDLE state requiring user start input
+            endcase
+        end
     end
+
 
 endmodule
