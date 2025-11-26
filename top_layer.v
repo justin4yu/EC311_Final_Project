@@ -56,4 +56,18 @@ module top_whackamole (
         end
     endgenerate
 
+    // ----------------------------------------------------------------
+    // 3) Temporary Game Start Enable 
+    // ----------------------------------------------------------------
+    reg game_enable;
+    always 
+
+    @(posedge startPulse or negedge reset) begin
+        if (!reset) begin
+            game_enable <= 1'b0;
+        end else begin
+            game_enable <= 1'b1; // For now, just enable game on start button press
+        end
+    end
+
 endmodule
