@@ -60,14 +60,28 @@ module top_whackamole (
     // 3) Temporary Game Start Enable 
     // ----------------------------------------------------------------
     reg game_enable;
-    always 
-
-    @(posedge startPulse or negedge reset) begin
+    always @(posedge startPulse or negedge reset) begin
         if (!reset) begin
             game_enable <= 1'b0;
         end else begin
             game_enable <= 1'b1; // For now, just enable game on start button press
         end
     end
+
+    // ----------------------------------------------------------------
+    // 4) Mole Generator & Button Press Detection
+    // ----------------------------------------------------------------
+    wire [4:0] molePositions;
+    mole_generator mole_gen (
+        .clock(clock),
+        .reset(reset),
+        .enable(game_enable),
+        .pulse(incrementClock), // 1Hz pulse for mole appearance timing
+        .molePositions(molePositions)
+    );
+
+    assign moleLED = molePositions; // Directly map each mole positions to their respective mole LEDs
+    reg moleHit;
+    assign moleHit = (molePositions & moleButtonPulses); // Check if the button pressed matches the current active mole position using bitwise AND
 
 endmodule
