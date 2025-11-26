@@ -15,6 +15,17 @@ module game_fsm #(parameter game_timer = 30)(
 
     reg [1:0] current_state, next_state;
 
+    // Game RESET
+    always @(posedge clkIn or posedge reset) begin
+        if (!reset) begin
+            current_state <= IDLE;
+            score         <= 6'd0;
+            game_active   <= 1'b0;
+        end else begin
+            current_state <= next_state;
+        end
+    end
+
     // State transitions
     always @(*) begin
        next_state = current_state;
