@@ -7,15 +7,15 @@ module clock_divider #(parameter divisor = 100_000_000)(
     
     reg [26:0] count;
     
-    always @(posedge clock or negedge reset) begin
+    always @(posedge clkIn or negedge reset) begin
         if (!reset) begin
-            count <= 27'd0;
+            count  <= 27'd0;
             clkOut <= 1'b0;
         end else begin
             clkOut <= 1'b0;
             
             if(count == divisor-1) begin // every 100MHz, send pulse (1Hz)
-                count <= 27'd0;
+                count  <= 27'd0;
                 clkOut <= 1'b1;
             end else begin
                 count <= count + 1;

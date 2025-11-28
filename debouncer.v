@@ -49,9 +49,9 @@ module debouncer (
 
     always @(posedge clock or negedge reset) begin
         if (!reset) begin // **Active-low reset 
-            count        <= 21'd0;
+            count         <= 21'd0;
             previousState <= 1'b0;
-            currentState     <= 1'b0;
+            currentState  <= 1'b0;
             buttonOut     <= 1'b0;
         
         // Button not pressed

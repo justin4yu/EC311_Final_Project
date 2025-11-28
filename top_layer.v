@@ -16,9 +16,10 @@ module top_whackamole (
     clock_divider #(
         .divisor(100_000_000) // divide by 100 million for 1Hz clock (reconfig default param)
     ) div_1Hz (
-        .clkIn(clock),
-        .reset(reset),
-        .clkOut(incrementClock)
+        .clkIn  (clock),
+        .reset  (reset),
+        
+        .clkOut (incrementClock)
     );
 
     // 1kHz clock for segment display 
@@ -26,20 +27,22 @@ module top_whackamole (
     clock_divider #(
         .divisor(100_000) // divide by 100 thousand for 1kHz clock (reconfig default param)
     ) div_1kHz (
-        .clkIn(clock),
-        .reset(reset),
-        .clkOut(displayClock)
+        .clkIn  (clock),
+        .reset  (reset),
+
+        .clkOut (displayClock)
     );
 
     // ----------------------------------------------------------------
     // 2) Debouncer setup + Initialize 5 mole buttons
     // ----------------------------------------------------------------
-    wire startPulse; 
+    wire game_start; 
     debouncer start_debouncer (
-        .clock(clock),
-        .reset(reset),
-        .buttonIn(startButton),
-        .buttonOut(startPulse)
+        .clock     (clock),
+        .reset     (reset),
+        .buttonIn  (startButton),
+
+        .buttonOut (game_start)
     );
 
     // Create a 5-bit wire to hold all 5 debounced mole button signals
@@ -48,40 +51,50 @@ module top_whackamole (
     generate // Equivalent to 5 debouncers for the 5 mole buttons
         for (moleIdx = 0; moleIdx < 5; moleIdx = moleIdx + 1) begin : moleButtonDebouncers
             debouncer mole_debouncer (
-                .clock(clock),
-                .reset(reset),
-                .buttonIn(moleButton[moleIdx]),
-                .buttonOut(moleButtonPulses[moleIdx])
+                .clock     (clock),
+                .reset     (reset),
+                .buttonIn  (moleButton[moleIdx]),
+
+                .buttonOut (moleButtonPulses[moleIdx])
             );
         end
     endgenerate
 
     // ----------------------------------------------------------------
-    // 3) Temporary Game Start Enable 
+    // 3) Game_FSM Setup
     // ----------------------------------------------------------------
-    reg game_enable;
-    always @(posedge startPulse or negedge reset) begin
-        if (!reset) begin
-            game_enable <= 1'b0;
-        end else begin
-            game_enable <= 1'b1; // For now, just enable game on start button press
-        end
-    end
+    wire [5:0] score;
+    wire       game_enable;
+    wire       game_over;
+
+    game_fsm whack_a_mole_fsm (
+        .clkIn          (clock), // 100MHz clock from FPGA
+        .incrementClock (incrementClock), // from 1Hz clock divider
+        .reset          (reset),
+        .startGame      (game_start), // from start button debouncer
+        .player_scored  (moleHit), // bit masking output, 1 if player hit a mole
+        .timer_expired  (game_over),
+
+        .game_active    (game_enable), // game status output 
+        .score          (score)
+    );
 
     // ----------------------------------------------------------------
     // 4) Mole Generator & Button Press Detection
     // ----------------------------------------------------------------
     wire [4:0] molePositions;
     mole_generator mole_gen (
-        .clock(clock),
-        .reset(reset),
-        .enable(game_enable),
-        .pulse(incrementClock), // 1Hz pulse for mole appearance timing
-        .molePositions(molePositions)
+        .clock         (clock),
+        .reset         (reset),
+        .enable        (game_enable), // from Game_FSM
+        .pulse         (incrementClock), // 1Hz pulse for mole appearance timing from 1Hz clock divider
+
+        .mole_position (molePositions)
     );
 
-    assign moleLED = molePositions; // Directly map each mole positions to their respective mole LEDs
-    reg moleHit;
-    assign moleHit = (molePositions & moleButtonPulses); // Check if the button pressed matches the current active mole position using bitwise AND
+    // Directly map each mole positions to their respective mole LEDs
+    assign moleLED = molePositions; 
+    // Check if the button pressed matches the current active mole position using bit masking
+    wire moleHit = |(molePositions & moleButtonPulses); // added bitwise OR reduction in case we want to allow more than one mole appear at a time
 
 endmodule
