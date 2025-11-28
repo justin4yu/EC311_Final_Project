@@ -35,37 +35,45 @@ module game_fsm_testbench;
     end
 
     // Manually drive inputs at each state to see the transitions
+    // Simulate
     initial begin
-        reset         = 1'b0;   // assert active-low reset
+        reset         = 1'b0; // force active-low reset
         startGame     = 1'b0;
         player_scored = 1'b0;
         timer_expired = 1'b0;
 
         #20;
-        reset = 1'b1; // test idle state before forcing an early reset
+        reset = 1'b1;          
 
-        // start game
+        // Start game
         #20;
-        startGame = 1'b1;
+        startGame = 1'b1; // signal game start
         #10;
-        startGame = 1'b0;
+        startGame = 1'b0; // gamne should be automatically switch to RUNNING
 
-        // feed the player some points
+        // Score once
         #50;
         player_scored = 1'b1;
         #10;
         player_scored = 1'b0;
 
+        // Score twice
         #100;
         player_scored = 1'b1;
         #10;
         player_scored = 1'b0;
 
-        // force timer expiration
+        // game finished, should go to FINISH
         #200;
         timer_expired = 1'b1;
         #10;
         timer_expired = 1'b0;
+
+        // another restart after FINISH
+        #100;
+        startGame = 1'b1;
+        #10;
+        startGame = 1'b0;
 
         #200;
         $finish;
