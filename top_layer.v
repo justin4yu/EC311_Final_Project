@@ -93,6 +93,18 @@ module top_whackamole (
         .mole_position (molePositions)
     );
 
+    // ----------------------------------------------------------------
+    // 5) Score Counter
+    // ----------------------------------------------------------------
+    wire [5:0] score;
+    score_counter score_count (
+        .clkIn        (clock),
+        .reset        (reset),
+        .game_active  (game_enable),
+        .player_scored(moleHit),
+        .score        (score)
+    );
+
     // Directly map each mole positions to their respective mole LEDs
     assign moleLED = molePositions; 
     // Check if the button pressed matches the current active mole position using bit masking
