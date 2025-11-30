@@ -78,7 +78,6 @@ module top_whackamole (
         .timer_expired (game_over),
 
         .game_active   (game_enable), // game status output 
-        .score         (score)
     );
 
     // ----------------------------------------------------------------
