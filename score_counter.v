@@ -7,9 +7,18 @@ module score_counter (
     output reg [5:0] score           // (2^6)-1 score range (0-63) ** can revise if needed if we increase game timer range
 );
 
-    // Score logic at each input signal instance
-    always @(*) begin
-
+    // Score logic 
+    always @(posedge clkIn or negedge reset) begin
+        if (!reset) begin
+            score <= 6'd0;
+        end else if (!game_active) begin
+            // whenever the game is not running, keep score at 0
+            score <= 6'd0;
+        end else begin
+            // each valid mole hit increments score by 1, max score is currently 63
+            if (player_scored && score != 6'd63) 
+                score <= score + 6'd1;
+        end
     end
 
 endmodule
