@@ -66,17 +66,19 @@ module top_whackamole (
     wire [5:0] score;
     wire       game_enable;
     wire       game_over;
+    // temporary hardcode game_over for testbench
+    assign game_over = 1'b0;
 
     game_fsm whack_a_mole_fsm (
-        .clkIn          (clock), // 100MHz clock from FPGA
-        .incrementClock (incrementClock), // from 1Hz clock divider
-        .reset          (reset),
-        .startGame      (game_start), // from start button debouncer
-        .player_scored  (moleHit), // bit masking output, 1 if player hit a mole
-        .timer_expired  (game_over),
+        .clkIn         (clock), // 100MHz clock from FPGA
+        .incrementClk  (incrementClock), // from 1Hz clock divider
+        .reset         (reset),
+        .startGame     (game_start), // from start button debouncer
+        .player_scored (moleHit), // bit masking output, 1 if player hit a mole
+        .timer_expired (game_over),
 
-        .game_active    (game_enable), // game status output 
-        .score          (score)
+        .game_active   (game_enable), // game status output 
+        .score         (score)
     );
 
     // ----------------------------------------------------------------
