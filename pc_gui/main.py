@@ -23,6 +23,9 @@ from gui import (
 )
 
 def main():
+    # ----------------------------------------------------------------
+    # This has been hardencoded for game start, need to integrate this for FPGA game start signal
+    # ----------------------------------------------------------------
     clock = pygame.time.Clock()  # Manages frame rate
 
     running = True
@@ -31,28 +34,40 @@ def main():
     start_time = time.time()
     last_mole_time = start_time
 
+    # ----------------------------------------------------------------
+    # initial mole position (row is always 0 in a 1x5 grid)
+    # ----------------------------------------------------------------
+    '''Need to revise so that the mole generation comes from the recieve UART bytes from FPGA'''
     # initial mole position (row is always 0 in a 1x5 grid)
     mole_position = (0, random.randint(0, GRID_COLS - 1))
     mole_visible = True
 
     while running:
         screen.fill(BACKGROUND_COLOR)
-
-        current_time = time.time()
+        draw_grid()
+        current_time = time.time    ()
         elapsed_time = current_time - start_time
         remaining_time = GAME_TIME - elapsed_time
 
         # End game when time runs out
         if remaining_time <= 0:
             running = False
+        ''' End revision '''
 
-        # Change mole position after MOLE_TIME seconds
+        # ----------------------------------------------------------------
+        # Need to revise so that the mole generation comes from the recieve UART bytes from FPGA
+        # ----------------------------------------------------------------
+        '''Need to revise so that the mole generation comes from the recieve UART bytes from FPGA'''
         if current_time - last_mole_time > MOLE_TIME:
             mole_position = (0, random.randint(0, GRID_COLS - 1))
             last_mole_time = current_time
             mole_visible = True
+        ''' End revision '''
 
-        # Event handling
+        # ----------------------------------------------------------------
+        # Event Handling
+        # ----------------------------------------------------------------
+        ''' Need to revise so that the mouse click detection can come from the FPGA input '''
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -67,13 +82,15 @@ def main():
                         score += 1
                         print(f"Hit mole #{clicked_cell[1]}")
                         mole_visible = False  # hide mole until next timer
-
-        # Draw everything
-        draw_grid()
+        ''' End revision '''
 
         if mole_visible:
             draw_mole(mole_position)
 
+        #----------------------------------------------------------------
+        # Game Info Display
+        # ----------------------------------------------------------------
+        '''DOES NOT NEED REVISION'''
         # Draw time (bottom-left)
         time_text = font.render(f"Time: {int(max(0, remaining_time))}s", True, (0, 0, 0))
         screen.blit(time_text, (10,  SCREEN_HEIGHT - 100))
@@ -90,7 +107,10 @@ def main():
         pygame.display.flip()
         clock.tick(FPS)
 
-    # Simple game-over pause
+    # ----------------------------------------------------------------
+    # Game Over Menu
+    # ----------------------------------------------------------------
+    ''' Need to revise so that the game over display can be sent to FPGA display output and also add a Play Again Button '''
     game_over_text = font.render("Game Over!", True, (0, 0, 0))
     final_score_text = font.render(f"Final Score: {score}", True, (0, 0, 0))
 
@@ -105,8 +125,11 @@ def main():
         (screen.get_width() // 2 - final_score_text.get_width() // 2,
          screen.get_height() // 2),
     )
+    ''' End revision '''
+
+
     pygame.display.flip()
-    pygame.time.wait(3000)
+    pygame.time.wait(20000)
 
     pygame.quit()
 
