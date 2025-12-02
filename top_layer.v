@@ -77,9 +77,8 @@ module top_whackamole (
         .player_scored (moleHit), // bit masking output, 1 if player hit a mole
         .timer_expired (game_over),
 
-        .game_active   (game_enable), // game status output 
+        .game_active   (game_enable) // game status output 
     );
-
     // ----------------------------------------------------------------
     // 4) Mole Generator & Button Press Detection
     // ----------------------------------------------------------------
