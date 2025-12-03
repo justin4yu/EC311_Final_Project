@@ -4,6 +4,7 @@
 import pygame
 import random
 import time
+import serial
 
 # Import all the stuff defined in gui.py
 from gui import (
@@ -21,6 +22,10 @@ from gui import (
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
 )
+# serial connection
+SERIAL_PORT = "COM" 
+BAUD_RATE   = 9600
+ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.01)
 
 def main():
     # ----------------------------------------------------------------
@@ -39,7 +44,8 @@ def main():
     # ----------------------------------------------------------------
     '''Need to revise so that the mole generation comes from the recieve UART bytes from FPGA'''
     # initial mole position (row is always 0 in a 1x5 grid)
-    mole_position = (0, random.randint(0, GRID_COLS - 1))
+    mole_col = 0 # default column
+    mole_position = (0, mole_col)
     mole_visible = True
 
     while running:
@@ -58,10 +64,17 @@ def main():
         # Need to revise so that the mole generation comes from the recieve UART bytes from FPGA
         # ----------------------------------------------------------------
         '''Need to revise so that the mole generation comes from the recieve UART bytes from FPGA'''
-        if current_time - last_mole_time > MOLE_TIME:
-            mole_position = (0, random.randint(0, GRID_COLS - 1))
-            last_mole_time = current_time
-            mole_visible = True
+        # Read from serial port for mole position
+        try:
+            while serial.in_waiting > 0:
+                byte = serial.read(1)
+                ascii_value = byte.decode('utf-8')
+                if ascii_value in ['0', '1', '2', '3', '4']:
+                    mole_col = int(ascii_value)
+                    mole_position = (0, mole_col)
+                    mole_visible = True
+        except Exception as e:
+            print(f"Error reading from serial: {e}")
         ''' End revision '''
 
         # ----------------------------------------------------------------
@@ -82,7 +95,13 @@ def main():
                         score += 1
                         print(f"Hit mole #{clicked_cell[1]}")
                         mole_visible = False  # hide mole until next timer
-        ''' End revision '''
+
+                    # ASCII 'H' is sent to FPGA to indicate a hit
+                    try:
+                        ser.write(b"H")
+                    except Exception as e:
+                        print(f"Error writing to serial: {e}")
+                    ''' End revision '''
 
         if mole_visible:
             draw_mole(mole_position)
