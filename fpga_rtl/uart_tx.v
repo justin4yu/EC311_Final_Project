@@ -12,7 +12,7 @@ module uart_tx #(
     input wire       clock, // 100MHz FPGA clock
     input wire       reset, // active-low reset
     input wire       tx_start, // 1 bit flag to start TX
-    input wire [7:0] tx_data, // one byte of data to send to UART
+    input wire [7:0] tx_data, // one byte of data to send to PC/USB-UART
     output reg       uart_tx, // UART -> PC TX line (shows the 1 or 0 being sent)
     output reg       uart_tx_busy // 1 bit flag to indicate TX is in progress
 );
@@ -102,7 +102,7 @@ module uart_tx #(
                 end      
             end
 
-            // Packet sent, reset back to idle state
+            // Packet sent, reset back to idle state, wait for next packet send
             TX_CLEANUP: begin
                 tx_state <= TX_IDLE;
             end
