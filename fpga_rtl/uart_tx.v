@@ -7,7 +7,7 @@
 module uart_tx #(
     // UART Baud rate config
     // (100,000,000 (CLK) / 9600 (BAUD)) =  10417
-    parameter CLKS_PER_BIT = 10417; // number of clock cycles per bit
+    parameter CLKS_PER_BIT = 10417 // number of clock cycles per bit
 )(
     input wire       clock, // 100MHz FPGA clock
     input wire       reset, // active-low reset
@@ -37,7 +37,7 @@ module uart_tx #(
         tx_shift_reg <= 8'd0;
         tx_bit_idx   <= 3'd0;
         uart_tx      <= 1'b1;   
-        tx_busy      <= 1'b0;
+        uart_tx_busy      <= 1'b0;
     end else begin
         case(tx_state)
             // Stay in idle until tx_start is signaled
@@ -45,7 +45,7 @@ module uart_tx #(
                 reg_clks_cnt <= 32'd0;
                 tx_bit_idx   <= 3'd0;
                 uart_tx      <= 1'b1;   
-                tx_busy      <= 1'b0;
+                uart_tx_busy      <= 1'b0;
 
                 if (tx_start) begin
                     tx_shift_reg <= tx_data;
