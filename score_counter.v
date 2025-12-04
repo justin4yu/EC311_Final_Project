@@ -11,7 +11,7 @@ module score_counter (
     always @(posedge clkIn or negedge reset) begin
         if (!reset) begin
             score <= 6'd0;
-        end else if (!game_active) begin
+        end else if (timer_expired || !game_active) begin
             // whenever the game is not running, keep score at 0
             score <= 6'd0;
         end else begin
