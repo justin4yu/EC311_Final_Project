@@ -25,7 +25,7 @@ from gui import (
     draw_button,        
 )
 # serial connection
-SERIAL_PORT = "COM" 
+SERIAL_PORT = "COM5" 
 BAUD_RATE   = 9600
 ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=0.01)
 
@@ -151,7 +151,7 @@ def main():
     # Draw Play Again button 
     play_again_rect = make_button_rect(screen.get_height() // 2 + 80)
     draw_button(play_again_rect, "Play Again")
-    
+
     pygame.display.flip()
     play_again_clicked = False
     waiting = True
@@ -168,6 +168,7 @@ def main():
                     waiting = False
                     try:
                         ser.write(b"S")   # 'S' = Start
+                        print("Sent H to FPGA")
                     except Exception as e:
                         print(f"Error writing start to serial: {e}")
 
@@ -176,4 +177,9 @@ def main():
     return play_again_clicked
 
 if __name__ == "__main__":
-    main()
+    keep_playing = True
+    while keep_playing:
+        keep_playing = main()   # main() returns True if Play Again clicked, else False
+
+    pygame.quit()
+
