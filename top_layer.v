@@ -95,32 +95,13 @@ module top_whackamole (
     // ----------------------------------------------------------------
     // 5) Score Counter
     // ----------------------------------------------------------------
+    wire [5:0] score;
     score_counter score_count (
         .clkIn        (clock),
         .reset        (reset),
-        .game_Start   (game_enable),
-        .timer_expired(game_over)
+        .game_active  (game_enable),
         .player_scored(moleHit),
         .score        (score)
-    );
-
-    // ----------------------------------------------------------------
-    // 6) UART Interface
-    // ----------------------------------------------------------------
-    wire       tx_start;
-    wire [7:0] uart_data;
-    wire       uart_tx;
-    wire       uart_tx_busy;
-
-    uart_tx #(
-        .CLKS_PER_BIT (10417)
-    ) uart_transmitter(
-        .clock        (clock) , 
-        .reset        (reset), 
-        .tx_start     (tx_start),
-        .tx_data      (uart_data), 
-        .uart_tx      (uart_tx), 
-        .uart_tx_busy (uart_tx_busy)
     );
 
     // Directly map each mole positions to their respective mole LEDs
