@@ -1,5 +1,3 @@
-`timescale 1ns / 1ps
-
 module top_whackamole (
     input  wire       clock,        // 100MHz from FPGA clock
     input  wire       reset,        // Active-low reset button
@@ -106,7 +104,7 @@ module top_whackamole (
     assign moleHit = |(molePositions & moleButtonPulses);
 
     // ----------------------------------------------------------------
-    // 5) Timer Counter (for game time – for display only right now)
+    // 5) Timer Counter (for game time - for display only right now)
     // ----------------------------------------------------------------
     wire        timer_done;
     wire [5:0]  current_time;
@@ -164,7 +162,7 @@ module top_whackamole (
     assign current_state  = 3'd0;     // IDLE placeholder
     assign countdown_timer = 4'd0;    // no pre-game countdown yet
 
-    display_controller disp_ctrl (
+    display_control disp_ctrl (
         .current_state   (current_state),
         .countdown_timer (countdown_timer),
         .game_timer_bcd  (game_timer_bcd),
@@ -186,7 +184,7 @@ module top_whackamole (
     };
 
     // Instantiate seven-segment driver
-    sev_seg_driver score_display (
+    seven_seg_decoder score_display (
         .clk     (displayClock),        // 1kHz display clock
         .reset   (reset),               // reset (active low)
         .data_in (score_display_data),  // 32-bit packed score
