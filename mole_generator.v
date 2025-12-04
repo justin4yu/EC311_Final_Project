@@ -9,9 +9,6 @@ module mole_generator (
     reg  [2:0]  lfsr; // max states (1-7)
     wire        feedback = lfsr[2] ^ lfsr[0]; // XOR of MSB and LSB (can be changed for different sequences)
     wire [2:0]  nxt_bit = {lfsr[1:0], feedback}; // ***Might not be the most optimial feedback sequence***
-<<<<<<< HEAD
-    wire [2:0]  idx = nxt_bit % 5; // Method 1 for randomization
-=======
     wire [2:0]  idx = nxt_bit % 5 // Method 1 for randomization
     
     // Method 2: Direct Mapping
@@ -28,7 +25,6 @@ module mole_generator (
     //         default: idx = 3'd0; // Default to Mole 1: maybe change for (000,110,111)
     //     endcase
     // end
->>>>>>> feature/mole_generator
 
     always @(posedge clock or negedge reset) begin
         //Using one-hot encoding for mole positions

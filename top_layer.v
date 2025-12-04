@@ -1,14 +1,16 @@
 `timescale 1ns / 1ps
 
 module top_whackamole (
-    input  wire        clock,        // 100MHz from FPGA clock
-    input  wire        reset,        // Active-low reset button
-    input  wire        startButton,  // Start button 
-    input  wire [4:0]  moleButton,   // 5 mole buttons
-    output wire [4:0]  moleLED,       // 5 LEDs for moles respectively
-    output wire [7:0]  an,           // 
-    output wire [6:0]  seg,          // 
-    output wire        dp            // 
+    input  wire       clock,        // 100MHz from FPGA clock
+    input  wire       reset,        // Active-low reset button
+    input  wire       startButton,  // Start button 
+    input  wire [4:0] moleButton,   // 5 mole buttons
+    input  wire       uart_rx_pin,  // UART receive pin from PC
+    output wire       uart_tx_pin,  // UART transmit pin to PC
+    output wire [4:0] moleLED,      // 5 LEDs for moles respectively
+    output wire [7:0] an,           // 
+    output wire [6:0] seg,          // 
+    output wire       dp            // 
 );
 
     // ----------------------------------------------------------------
@@ -78,10 +80,11 @@ module top_whackamole (
         .clkIn         (clock), // 100MHz clock from FPGA
         .incrementClk  (incrementClock), // from 1Hz clock divider
         .reset         (reset),
-        .startGame     (game_start), // from start button debouncer
-        .player_scored (moleHit), // bit masking output, 1 if player hit a mole
+        .startGame     (start_game), // from start button debouncer
+        .player_scored (player_scored), // bit masking output, 1 if player hit a mole
         .timer_expired (game_over),
-        .game_active   (game_enable) // game status output 
+        .game_active   (game_enable) // game status output
+        
     );
     // ----------------------------------------------------------------
     // 4) Mole Generator & Button Press Detection
@@ -97,7 +100,6 @@ module top_whackamole (
         .mole_position (molePositions)
     );
 
-       
     assign moleLED = molePositions;  // Directly map each mole positions to their respective mole LEDs
 
     // Check if the button pressed matches the current active mole position using bit masking
@@ -197,13 +199,12 @@ module top_whackamole (
     // ----------------------------------------------------------------
     // 9) Score Counter
     // ----------------------------------------------------------------
-    wire [5:0] score;
     score_counter score_count (
         .clkIn        (clock),
         .reset        (reset),
-        .gameStart   (game_enable),
+        .game_active  (game_active),
         .timer_expired(game_over),
-        .player_scored(moleHit),
+        .player_scored(player_scored),
         .score        (score)
     );
 
@@ -226,7 +227,7 @@ module top_whackamole (
         .tx_start(tx_start),
         .tx_data (tx_data),
         .uart_tx (uart_tx_pin), // connect to top-level output pin
-        .tx_busy (tx_busy)
+        .uart_tx_busy (tx_busy)
     );
 
     // UART receiver: PC -> FPGA
@@ -241,16 +242,22 @@ module top_whackamole (
     );
 
     // ----------------------------------------------------------------
-    // 11) UART Control Logic
-    // ----------------------------------------------------------------
-    assign moleLED = molePositions;
-    wire moleHit = |(molePositions & moleButtonPulses); // bit masking output, 1 if player hit a mole
-
-    // ----------------------------------------------------------------
-    // 12) Send mole position to PC when it changes
+    // Send mole position to PC when it changes
     // ----------------------------------------------------------------
     reg [4:0] last_mole_pos;
     reg [7:0] tx_data_reg; // holds the data that is being sent via UART
+    reg [2:0] mole_index;
+
+    always @* begin
+        case (molePositions)
+            5'b00001: mole_index = 3'd0;
+            5'b00010: mole_index = 3'd1;
+            5'b00100: mole_index = 3'd2;
+            5'b01000: mole_index = 3'd3;
+            5'b10000: mole_index = 3'd4;
+            default:  mole_index = 3'd0;  
+        endcase
+    end
 
     assign tx_data = tx_data_reg; 
 
@@ -271,11 +278,44 @@ module top_whackamole (
         end
     end
 
+    // ----------------------------------------------------------------
+    // Receives a valid mole click from PC to update score
+    // ----------------------------------------------------------------
+    reg pc_hit;
 
-    // Directly map each mole positions to their respective mole LEDs
-    assign moleLED = molePositions; 
-    // Check if the button pressed matches the current active mole position using bit masking
-    wire moleHit = |(molePositions & moleButtonPulses); // added bitwise OR reduction in case we want to allow more than one mole appear at a time
-    
+    always @(posedge clock or negedge reset) begin
+        if (!reset) begin
+            pc_hit <= 1'b0;
+        end else begin
+            pc_hit <= 1'b0;  // default each cycle
+
+            if (rx_ready && rx_data == "H") begin // using ASCII 'H' for Hit
+                pc_hit <= 1'b1; // one-cycle pulse when PC sends 'H'
+            end
+        end
+    end
+
+    wire player_scored;
+    assign player_scored = moleHit | pc_hit; // OR the button or pc valid mole hit
+
+    // ----------------------------------------------------------------
+    // Connect Game Start
+    // ----------------------------------------------------------------
+    reg start_from_pc;
+
+    always @(posedge clock or negedge reset) begin
+        if (!reset) begin
+            start_from_pc <= 1'b0;
+        end else begin
+            start_from_pc <= 1'b0;
+
+            if (rx_ready && rx_data == "S") begin  // using ASCII 'S' for Start
+                start_from_pc <= 1'b1;
+            end
+        end
+    end
+
+    wire start_game = game_start | start_from_pc; // OR the start button or PC start signal
+
 
 endmodule
