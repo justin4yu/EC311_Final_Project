@@ -151,7 +151,8 @@ def main():
     # Draw Play Again button 
     play_again_rect = make_button_rect(screen.get_height() // 2 + 80)
     draw_button(play_again_rect, "Play Again")
-
+    
+    pygame.display.flip()
     play_again_clicked = False
     waiting = True
     while waiting:

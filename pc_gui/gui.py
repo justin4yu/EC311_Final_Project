@@ -41,8 +41,8 @@ pygame.display.set_caption("Whack-a-Mole")
 # ----------------------------------------------------------------
 # Load images
 # ----------------------------------------------------------------
-MOLE_IMAGE_PATH = "WhackAMole_mole.png"
-HAMMER_IMAGE_PATH = "WhackAMole_hammer.png"
+MOLE_IMAGE_PATH = "pc_gui\\WhackAMole_mole.png"
+HAMMER_IMAGE_PATH = "pc_gui\\WhackAMole_hammer.png"
 
 mole_image = pygame.image.load(MOLE_IMAGE_PATH).convert_alpha()
 mole_image = pygame.transform.scale(mole_image, (MOLE_SIZE, MOLE_SIZE))
