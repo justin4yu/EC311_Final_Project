@@ -1,10 +1,8 @@
-`timescale 1ns / 1ps
-// Module to select and format the 32-bit display data based on the FSM state.
 module display_control (
-    input wire [2:0] current_state,      // FSM state (IDLE, COUNTDOWN, PLAY, GAMEOVER)
-    input wire [3:0] countdown_timer,    // 4-bit countdown value (0-5)
-    input wire [7:0] game_timer_bcd,     // 8-bit BCD (Time Tens/Ones)
-    input wire [7:0] score_bcd,          // 8-bit BCD (Score Tens/Ones)
+    input wire [2:0]  current_state,      // FSM state (IDLE, COUNTDOWN, PLAY, GAMEOVER)
+    input wire [3:0]  countdown_timer,    // 4-bit countdown value (0-5)
+    input wire [7:0]  game_timer_bcd,     // 8-bit BCD (Time Tens/Ones)
+    input wire [7:0]  score_bcd,          // 8-bit BCD (Score Tens/Ones)
     output reg [31:0] display_data       // 32-bit data for 8 digits (AN7 to AN0)
 );
 
