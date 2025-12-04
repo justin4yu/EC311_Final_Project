@@ -1,14 +1,12 @@
-module game_fsm #(parameter game_timer = 30)
-(    
+module game_fsm #(parameter game_timer = 30)(
     input            clkIn,            // 100MHz FPGA clock input
-    input            incrementClk,     // 1Hz clock for game timing
     input            reset,            // Still active low reset
     input            startGame,        // Signal to start the game
-    input            player_scored,    // Signal when player scores
     input            timer_expired,    // Signal when game timer expires
-    output reg       game_active       // Indicates if the game is active, over, or idle
+    output reg       game_active,      // Indicates if the game is active, over, or idle
+    output reg [1:0] fsm_state 
 
-    // Moving output to score_counter
+    // Moving output to score_counter 
     // output reg [5:0] score             // (2^6)-1 score range (0-63) ** can revise if needed if we increase game timer range
 );
    // States definition
@@ -22,10 +20,12 @@ module game_fsm #(parameter game_timer = 30)
     always @(posedge clkIn or negedge reset) begin
         if (!reset) begin
             current_state <= IDLE;
+            fsm_state     <= IDLE;
             game_active   <= 1'b0;
         end else begin
             current_state <= next_state;
-            case (current_state) // Game can only transition in the following ways unless reset has been pressed
+            fsm_state     <= next_state;
+            case(next_state) // Game can only transition in the following ways unless reset has been pressed
                 IDLE:    game_active <= 1'b0; // at start, reset score
                 RUNNING: game_active <= 1'b1; // game is active
                 FINISH:  game_active <= 1'b0; // end game and keep the score
@@ -33,7 +33,8 @@ module game_fsm #(parameter game_timer = 30)
             endcase
         end
     end
-        // State transition logic
+
+    // State transition logic
     always @(*) begin
         case (current_state)
             IDLE:    if (startGame)     next_state = RUNNING;
@@ -43,7 +44,5 @@ module game_fsm #(parameter game_timer = 30)
             default:                    next_state = IDLE;
         endcase
     end
-
-
 
 endmodule
