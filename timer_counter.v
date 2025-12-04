@@ -6,9 +6,7 @@ module timer_counter #(
 )(
     input wire clk,              // System clock
     input wire reset,
-    input wire enable,      
-         // Slow clock enable (e.g., 1 Hz pulse)
-    input wire load_timer,       // Signal to reload the timer (e.g., when entering IDLE)
+    input wire enable,           // Slow clock enable (e.g., 1 Hz pulse)
     output wire timer_done,      // Flag set when timer reaches zero
     output wire [TIMER_BITS-1:0] current_time // Current countdown value
 );
@@ -16,8 +14,8 @@ module timer_counter #(
     reg [TIMER_BITS-1:0] timer_reg;
 
     // Sequential Logic
-    always @(posedge clk or posedge reset) begin
-        if (reset || load_timer) begin
+    always @(posedge clk or negedge reset) begin
+        if (!reset) begin
             timer_reg <= MAX_TIME;
         end else if (enable && timer_reg > 0) begin
             timer_reg <= timer_reg - 1;
