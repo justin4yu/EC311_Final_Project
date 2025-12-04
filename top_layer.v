@@ -162,7 +162,7 @@ module top_whackamole (
         .enable        (game_enable), // from Game_FSM
         .pulse         (incrementClock), // 1Hz pulse for mole appearance timing from 1Hz clock divider
 
-        .mole_position (molePositions)
+        .mole_position (molePositions) // [4:0] output
     );
 
     assign moleLED = molePositions;  // Directly map each mole positions to their respective mole LEDs
