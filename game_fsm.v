@@ -1,10 +1,8 @@
 module game_fsm #(parameter game_timer = 30)
 (    
     input            clkIn,            // 100MHz FPGA clock input
-    input            incrementClk,     // 1Hz clock for game timing
     input            reset,            // Still active low reset
     input            startGame,        // Signal to start the game
-    input            player_scored,    // Signal when player scores
     input            timer_expired,    // Signal when game timer expires
     output reg       game_active       // Indicates if the game is active, over, or idle
 
