@@ -10,8 +10,8 @@ module uart_rx #(
     // (100,000,000 (CLK) / 9600 (BAUD)) =  10417
     parameter CLKS_PER_BIT = 10417  // number of clock cycles per bit
 )(
-    input  wire       clock,  // 100MHz FPGA clock
-    input  wire       reset,  // active-low reset
+    input  wire       clock,    // 100MHz FPGA clock
+    input  wire       reset,    // active-low reset
     input  wire       uart_rx,  // serial line from PC/USB-UART
     output reg  [7:0] rx_data,  // // one byte of data from PC/USB-UART
     output reg        rx_ready  // 1 bit flag to indicate RX is in progress

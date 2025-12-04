@@ -5,6 +5,8 @@ module top_whackamole (
     input  wire        reset,        // Active-low reset button
     input  wire        startButton,  // Start button 
     input  wire [4:0]  moleButton,   // 5 mole buttons
+    input  wire        uart_rx_pin,  // UART receive line 
+    output wire        uart_tx_pin,      // UART transmit line
     output wire [4:0]  moleLED       // 5 LEDs for moles respectively
 );
 
@@ -89,7 +91,7 @@ module top_whackamole (
         .enable        (game_enable), // from Game_FSM
         .pulse         (incrementClock), // 1Hz pulse for mole appearance timing from 1Hz clock divider
 
-        .mole_position (molePositions)
+        .mole_position (molePositions) // [4:0] output
     );
 
     // ----------------------------------------------------------------
@@ -99,10 +101,76 @@ module top_whackamole (
         .clkIn        (clock),
         .reset        (reset),
         .game_Start   (game_enable),
-        .timer_expired(game_over)
+        .timer_expired(game_over),
         .player_scored(moleHit),
+        
         .score        (score)
     );
+
+    // ----------------------------------------------------------------
+    // 6) UART TX / RX
+    // ----------------------------------------------------------------
+    wire [7:0] tx_data;
+    reg        tx_start;
+    wire       tx_busy;
+
+    wire [7:0] rx_data;
+    wire       rx_ready;
+
+    // UART transmitter: FPGA -> PC
+    uart_tx #(
+        .CLKS_PER_BIT(10417)   // 100MHz / 9600 baud
+    ) uart_tx_inst (
+        .clock   (clock),
+        .reset   (reset),
+        .tx_start(tx_start),
+        .tx_data (tx_data),
+        .uart_tx (uart_tx_pin), // connect to top-level output pin
+        .tx_busy (tx_busy)
+    );
+
+    // UART receiver: PC -> FPGA
+    uart_rx #(
+        .CLKS_PER_BIT(10417)   // must match TX & PC baud
+    ) uart_rx_inst (
+        .clock   (clock),
+        .reset   (reset),
+        .uart_rx (uart_rx_pin), // connect to top-level input pin
+        .rx_data (rx_data),
+        .rx_ready(rx_ready)
+    );
+
+    // ----------------------------------------------------------------
+    // 7) UART Control Logic
+    // ----------------------------------------------------------------
+    assign moleLED = molePositions;
+    wire moleHit = |(molePositions & moleButtonPulses); // bit masking output, 1 if player hit a mole
+
+    // ----------------------------------------------------------------
+    // 8) Send mole position to PC when it changes
+    // ----------------------------------------------------------------
+    reg [4:0] last_mole_pos;
+    reg [7:0] tx_data_reg; // holds the data that is being sent via UART
+
+    assign tx_data = tx_data_reg; 
+
+    always @(posedge clock or negedge reset) begin
+        if (!reset) begin
+            last_mole_pos <= 5'b00000;
+            tx_start      <= 1'b0;
+            tx_data_reg   <= 8'd0;
+        end else begin
+            tx_start <= 1'b0;  // default, and reset the tx_busy after each packet sent
+
+            // Send new mole position when it changes
+            if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
+                last_mole_pos <= molePositions;
+                tx_data_reg   <= {3'b000, molePositions}; // need to concatenate to feed UART 1 byte data
+                tx_start      <= 1'b1; // signal to start TX
+            end
+        end
+    end
+
 
     // Directly map each mole positions to their respective mole LEDs
     assign moleLED = molePositions; 

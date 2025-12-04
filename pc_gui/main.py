@@ -21,6 +21,8 @@ from gui import (
     get_cell_from_mouse_pos,
     SCREEN_WIDTH,
     SCREEN_HEIGHT,
+    make_button_rect,   
+    draw_button,        
 )
 # serial connection
 SERIAL_PORT = "COM" 
@@ -146,9 +148,13 @@ def main():
     )
     ''' End revision '''
 
+    # Draw Play Again button 
+    play_again_rect = make_button_rect(screen.get_height() // 2 + 80)
+    draw_button(play_again_rect, "Play Again")
+
 
     pygame.display.flip()
-    pygame.time.wait(20000)
+    pygame.time.wait(100000)
 
     pygame.quit()
 
