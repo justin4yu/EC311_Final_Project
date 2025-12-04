@@ -53,8 +53,8 @@ def main():
     while running:
         screen.fill(BACKGROUND_COLOR)
         draw_grid()
-        current_time = time.time    ()
-        elapsed_time = current_time - start_time
+        current_time   = time.time()
+        elapsed_time   = current_time - start_time
         remaining_time = GAME_TIME - elapsed_time
 
         # End game when time runs out
@@ -152,12 +152,27 @@ def main():
     play_again_rect = make_button_rect(screen.get_height() // 2 + 80)
     draw_button(play_again_rect, "Play Again")
 
+    play_again_clicked = False
+    waiting = True
+    while waiting:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                waiting = False
+                play_again_clicked = False  # exit game instead
 
-    pygame.display.flip()
-    pygame.time.wait(100000)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                # check if click is inside the Play Again button
+                if play_again_rect.collidepoint(event.pos):
+                    play_again_clicked = True
+                    waiting = False
+                    try:
+                        ser.write(b"S")   # 'S' = Start
+                    except Exception as e:
+                        print(f"Error writing start to serial: {e}")
 
-    pygame.quit()
+        pygame.time.delay(10)
 
+    return play_again_clicked
 
 if __name__ == "__main__":
     main()
