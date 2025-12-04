@@ -1,13 +1,11 @@
-`timescale 1ns / 1ps
-// Module to handle the game's main timer countdown (e.g., 30 seconds)
 module timer_counter #(
     parameter TIMER_BITS = 6,  // Bits needed to represent the max time (e.g., 6 for 0-63)
     parameter MAX_TIME   = 30  // The starting value for the countdown
 )(
-    input wire clk,              // System clock
-    input wire reset,
-    input wire enable,           // Slow clock enable (e.g., 1 Hz pulse)
-    output wire timer_done,      // Flag set when timer reaches zero
+    input  wire                  clk, // System clock
+    input  wire                  reset,
+    input  wire                  enable, // Slow clock enable (e.g., 1 Hz pulse)
+    output wire                  timer_done, // Flag set when timer reaches zero
     output wire [TIMER_BITS-1:0] current_time // Current countdown value
 );
 
