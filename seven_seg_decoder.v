@@ -1,4 +1,4 @@
-module sev_seg_driver(
+module seven_seg_decoder(
     input wire clk,              
     input wire reset,
     input wire [31:0] data_in,   
