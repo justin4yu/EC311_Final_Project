@@ -201,7 +201,7 @@ module top_whackamole (
             // Send new mole position when it changes
             if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
                 last_mole_pos <= molePositions;
-                tx_data_reg   <= {3'b000, molePositions}; // need to concatenate to feed UART 1 byte data
+                tx_data_reg   <= 8'h30 + mole_index; // need to concatenate to feed UART 1 byte data
                 tx_start      <= 1'b1; // signal to start TX
             end
         end
