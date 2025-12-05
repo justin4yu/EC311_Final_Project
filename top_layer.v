@@ -200,14 +200,22 @@ module top_whackamole (
             pc_tx_start <= 1'b0;
 
             // When FSM goes back to IDLE, allow sending 'R' again next game
-            if (fsm_state == FSM_IDLE)
+            if (fsm_state == FSM_IDLE) begin
                 sent_gameover_code <= 1'b0;
+                last_mole_pos <= 5'b00000; // reset last mole pos
+            end
 
             if (fsm_state == FSM_FINISH && !sent_gameover_code && !tx_busy) begin
                 pc_tx_data         <= "R";   // ASCII 'R'
                 pc_tx_start        <= 1'b1;
                 sent_gameover_code <= 1'b1;
+            end 
+            
+            else if (player_scored && !tx_busy) begin
+                pc_tx_data   <= "H";  // ASCII 'H' for Hit
+                pc_tx_start  <= 1'b1;
             end
+    
             else if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
                 last_mole_pos <= molePositions;
                 pc_tx_data   <= "0" + mole_index;  // ASCII '0'..'4'
