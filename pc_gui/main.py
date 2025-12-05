@@ -98,12 +98,12 @@ def main():
                         print(f"Hit mole #{clicked_cell[1]}")
                         mole_visible = False  # hide mole until next timer
 
-                    # ASCII 'H' is sent to FPGA to indicate a hit
-                    try:
-                        ser.write(b"H")
-                    except Exception as e:
-                        print(f"Error writing to serial: {e}")
-                    ''' End revision '''
+                        # ASCII 'H' is sent to FPGA to indicate a hit
+                        try:
+                            ser.write(b"H")
+                        except Exception as e:
+                            print(f"Error writing to serial: {e}")
+                        ''' End revision '''
 
         if mole_visible:
             draw_mole(mole_position)
