@@ -30,7 +30,7 @@ HOLE_COLOR = (139, 69, 19)
 # **********Need Modification for FPGA Integration**********
 FPS = 30
 MOLE_TIME = 1        # seconds a mole stays up
-GAME_TIME = 10       # total game time in seconds
+GAME_TIME = 30       # total game time in seconds
 
 # ----------------------------------------------------------------
 # Set up the display
