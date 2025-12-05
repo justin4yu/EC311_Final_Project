@@ -189,29 +189,25 @@ module top_whackamole (
         endcase
     end
 
-    assign pc_tx_data = pc_tx_reg; 
 
-        always @(posedge clock or negedge reset) begin
+    always @(posedge clock or negedge reset) begin
         if (!reset) begin
             last_mole_pos      <= 5'b00000;
             pc_tx_start        <= 1'b0;
             pc_tx_data         <= 8'd0;
             sent_gameover_code <= 1'b0;
         end else begin
-            // default each cycle
             pc_tx_start <= 1'b0;
 
             // When FSM goes back to IDLE, allow sending 'R' again next game
             if (fsm_state == FSM_IDLE)
                 sent_gameover_code <= 1'b0;
 
-            // Priority 1: send 'R' once in FINISH state
             if (fsm_state == FSM_FINISH && !sent_gameover_code && !tx_busy) begin
                 pc_tx_data        <= "R";   // ASCII 'R'
                 pc_tx_start           <= 1'b1;
                 sent_gameover_code <= 1'b1;
             end
-            // Priority 2: send mole position when it changes
             else if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
                 last_mole_pos <= molePositions;
                 pc_tx_data   <= "0" + mole_index;  // ASCII '0'..'4'

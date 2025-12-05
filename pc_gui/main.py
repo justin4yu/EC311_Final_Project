@@ -70,11 +70,17 @@ def main():
         try:
             while ser.in_waiting > 0:
                 byte = ser.read(1)
-                ascii_value = byte.decode('utf-8')
+                ascii_value = byte.decode('utf-8', errors='ignore')
+
                 if ascii_value in ['0', '1', '2', '3', '4']:
                     mole_col = int(ascii_value)
                     mole_position = (0, mole_col)
                     mole_visible = True
+                elif ascii_value == 'R':   # FPGA reset signal
+                    print("Got R from FPGA: restarting game on PC")
+                    running = False
+                    mole_visible = False
+                    break
         except Exception as e:
             print(f"Error reading from serial: {e}")
         ''' End revision '''
@@ -175,7 +181,8 @@ def main():
         try:
             while ser.in_waiting > 0:
                 byte = ser.read(1)
-                ascii_value = byte.decode('utf-8', errors='ignore')
+                ascii_value = byte.decode('utf-8', errors='ignore') 
+
                 if ascii_value == 'R':   # FPGA reset signal
                     print("Got R from FPGA: restarting game on PC")
                     reset_from_fpga = True
