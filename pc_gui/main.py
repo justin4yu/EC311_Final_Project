@@ -12,8 +12,8 @@ from gui import (
     font,
     hammer_image,
     GRID_COLS,
-    BACKGROUND_COLOR,
     GAME_TIME,
+    background_image,
     MOLE_TIME,
     FPS,
     draw_grid,
@@ -50,8 +50,14 @@ def main():
     mole_position = (0, mole_col)
     mole_visible = True
 
+    # Hammer animation state
+    hammer_animating = False
+    hammer_time = 0.0           # seconds since animation start
+    HAMMER_SWING_DURATION = 0.15  # total animation time (seconds)
+    HAMMER_SWING_ANGLE = 80       # how far to rotate in degrees
+
     while running:
-        screen.fill(BACKGROUND_COLOR)
+        screen.blit(background_image, (0, 0))
         draw_grid()
         current_time   = time.time()
         elapsed_time   = current_time - start_time
@@ -101,6 +107,10 @@ def main():
                 running = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
+
+                hammer_animating = True
+                hammer_time = 0.0
+
                 if mole_visible:
                     mouse_pos = pygame.mouse.get_pos()
                     clicked_cell = get_cell_from_mouse_pos(mouse_pos)
@@ -125,17 +135,45 @@ def main():
         # ----------------------------------------------------------------
         '''DOES NOT NEED REVISION'''
         # Draw time (bottom-left)
-        time_text = font.render(f"Time: {int(max(0, remaining_time))}s", True, (0, 0, 0))
+        time_text = font.render(f"Time: {int(max(0, remaining_time))}s", True, (255, 255, 255))
         screen.blit(time_text, (10,  SCREEN_HEIGHT - 100))
 
         # Draw score (bottom-left)
-        score_text = font.render(f"Score: {score}", True, (0, 0, 0))
+        score_text = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(score_text, (10, SCREEN_HEIGHT - 50))
 
         # Draw hammer cursor at mouse position
         mouse_pos = pygame.mouse.get_pos()
-        hammer_rect = hammer_image.get_rect(center=mouse_pos)
-        screen.blit(hammer_image, hammer_rect.topleft)
+
+        # Compute rotation angle if animating
+        if hammer_animating:
+            # t goes from 0 → 1 over the duration
+            t = hammer_time / HAMMER_SWING_DURATION
+            # Ease-in-out swing using a simple curve (optional)
+            # You can just use t if you want linear:
+            # swing_factor = t
+            swing_factor = t * (2 - t)  # smoother than linear
+
+            # Rotate down by up to HAMMER_SWING_ANGLE degrees
+            angle = swing_factor * HAMMER_SWING_ANGLE
+        else:
+            angle = 0
+
+        # Rotate the hammer around its center
+        rotated_hammer = pygame.transform.rotate(hammer_image, -angle)  
+        hammer_rect = rotated_hammer.get_rect(center=mouse_pos)
+        screen.blit(rotated_hammer, hammer_rect.topleft)
+
+        # Time since last frame in seconds
+        dt = clock.get_time() / 1000.0
+
+        # Update hammer animation timer
+        if hammer_animating:
+            hammer_time += dt
+            if hammer_time >= HAMMER_SWING_DURATION:
+                hammer_animating = False
+                hammer_time = 0.0
+
 
         pygame.display.flip()
         clock.tick(FPS)
@@ -144,19 +182,18 @@ def main():
     # Game Over Menu
     # ----------------------------------------------------------------
     ''' Need to revise so that the game over display can be sent to FPGA display output and also add a Play Again Button '''
-    game_over_text = font.render("Game Over!", True, (0, 0, 0))
+    game_over_text = font.render("GAME OVER!", True, (0, 0, 0))
     final_score_text = font.render(f"Final Score: {score}", True, (0, 0, 0))
 
-    screen.fill(BACKGROUND_COLOR)
     screen.blit(
         game_over_text,
         (screen.get_width() // 2 - game_over_text.get_width() // 2,
-         screen.get_height() // 2 - 60),
+         screen.get_height() // 2 - 80),
     )
     screen.blit(
         final_score_text,
         (screen.get_width() // 2 - final_score_text.get_width() // 2,
-         screen.get_height() // 2),
+         screen.get_height() // 2 - 25),
     )
     ''' End revision '''
 
@@ -207,5 +244,3 @@ if __name__ == "__main__":
         keep_playing = main()   # main() restarts if Play Again or FPGA reset
 
     pygame.quit()
-
-

@@ -21,10 +21,9 @@ GRID_COLS = 5
 
 # Tile dimensions
 CELL_SIZE = 150      
-MOLE_SIZE = 100
+MOLE_SIZE = 250
 GRID_SPACING = 10    
 
-BACKGROUND_COLOR = (0, 255, 0)
 HOLE_COLOR = (139, 69, 19)
 
 # **********Need Modification for FPGA Integration**********
@@ -41,19 +40,27 @@ pygame.display.set_caption("Whack-a-Mole")
 # ----------------------------------------------------------------
 # Load images
 # ----------------------------------------------------------------
-MOLE_IMAGE_PATH = "pc_gui\\WhackAMole_mole.png"
-HAMMER_IMAGE_PATH = "pc_gui\\WhackAMole_hammer.png"
+MOLE_IMAGE_PATH = "pc_gui\\transparent_mole.png"
+HAMMER_IMAGE_PATH = "pc_gui\\transparent_hammer.png"
+BACKGROUND_IMAGE_PATH = "pc_gui\\WhackAMole_background.jpg"  
 
 mole_image = pygame.image.load(MOLE_IMAGE_PATH).convert_alpha()
 mole_image = pygame.transform.scale(mole_image, (MOLE_SIZE, MOLE_SIZE))
+mole_image = pygame.transform.smoothscale(mole_image, (int(MOLE_SIZE * 1.4), MOLE_SIZE))  # Slightly larger for better fit
 
 hammer_image = pygame.image.load(HAMMER_IMAGE_PATH).convert_alpha()
-hammer_image = pygame.transform.scale(hammer_image, (50, 50))
+hammer_image = pygame.transform.scale(hammer_image, (125, 125))
+
+background_image = pygame.image.load(BACKGROUND_IMAGE_PATH).convert()
+background_image = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+
+MOLE_SCALE   = 1.5   # 1.0 = original size, 2.0 = double
+HAMMER_SCALE = 1.5
 
 # ----------------------------------------------------------------
 # Font
 # ----------------------------------------------------------------
-font = pygame.font.SysFont("arial", 36)
+font = pygame.font.SysFont("comicsansms", 36)
 
 # ----------------------------------------------------------------
 # Drawing Functions
@@ -63,13 +70,31 @@ def draw_grid():
         for col in range(GRID_COLS):
             x = 5 + col * (CELL_SIZE + GRID_SPACING) # terrible hardcoding with dimensions but works for now
             y = 250 + row * (CELL_SIZE + GRID_SPACING) # terrible hardcoding with dimensions but works for now
-            pygame.draw.rect(screen, HOLE_COLOR, (x, y, CELL_SIZE, CELL_SIZE))
+            # Create a surface with per-pixel alpha enabled
+            hole_surface = pygame.Surface((CELL_SIZE, CELL_SIZE), pygame.SRCALPHA)
+
+            # Fill with brown *with transparency*
+            # (R, G, B, A) → A = alpha transparency 0–255
+            hole_surface.fill((139, 69, 19, 180))   # 140 ≈ ~55% opacity
+
+            # Draw the transparent rectangle onto the screen
+            screen.blit(hole_surface, (x, y))
 
 def draw_mole(mole_position):
-    """Draw the mole image centered in the active cell."""
     row, col = mole_position
-    x = 5 +col * (CELL_SIZE + GRID_SPACING) + (CELL_SIZE - MOLE_SIZE) // 2 # terrible hardcoding with dimensions but works for now
-    y = 250 + row * (CELL_SIZE + GRID_SPACING) + (CELL_SIZE - MOLE_SIZE) // 2 # terrible hardcoding with dimensions but works for now
+
+    # Top-left of the cell
+    cell_x = 5 + col * (CELL_SIZE + GRID_SPACING)
+    cell_y = 250 + row * (CELL_SIZE + GRID_SPACING)
+
+    # Use the actual size of the mole image
+    w = mole_image.get_width()
+    h = mole_image.get_height()
+
+    # Center the mole inside the cell
+    x = cell_x + (CELL_SIZE - w) // 2 + 11.5
+    y = cell_y + (CELL_SIZE - h) // 2 - 20
+
     screen.blit(mole_image, (x, y))
 
 def get_cell_from_mouse_pos(pos):
@@ -92,4 +117,3 @@ def draw_button(rect, text_str):
     text_surface = font.render(text_str, True, (0, 0, 0))
     text_rect = text_surface.get_rect(center=rect.center)
     screen.blit(text_surface, text_rect)
-

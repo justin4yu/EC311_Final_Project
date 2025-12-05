@@ -128,7 +128,7 @@ module top_whackamole (
     wire       moleHit;
     
     wire player_scored;
-    wire start_game = start_from_pc; // OR the start button or PC start signal
+    wire start_game = start_from_pc; // only PC start for now
 
     assign player_scored = moleHit | pc_hit; // OR the button or pc valid mole hit
     wire [1:0] fsm_state;  // FSM state exported from game_fsm
@@ -224,10 +224,6 @@ module top_whackamole (
                 last_mole_pos <= molePositions;
                 pc_tx_data   <= "0" + mole_index;  // ASCII '0'..'4'
                 pc_tx_start  <= 1'b1;
-            end
-
-            else if (game_enable && inc_rising && !tx_busy) begin
-                last_mole_pos <= 5'b00000; // reset last mole pos when game not active
             end
         end
     end
