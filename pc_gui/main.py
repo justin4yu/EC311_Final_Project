@@ -70,7 +70,9 @@ def main():
         try:
             while ser.in_waiting > 0:
                 byte = ser.read(1)
+                print(f"From FPGA, got byte: {byte}")
                 ascii_value = byte.decode('utf-8', errors='ignore')
+                print(f"Decoded ASCII value: {ascii_value}")
 
                 if ascii_value in ['0', '1', '2', '3', '4']:
                     mole_col = int(ascii_value)

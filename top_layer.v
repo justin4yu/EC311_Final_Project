@@ -189,29 +189,47 @@ module top_whackamole (
         endcase
     end
 
+    // TEMPORARY REPLACEMENT: Disable UART sending for now to test other parts
+    // always @(posedge clock or negedge reset) begin
+    //     if (!reset) begin
+    //         last_mole_pos      <= 5'b00000;
+    //         pc_tx_start        <= 1'b0;
+    //         pc_tx_data         <= 8'd0;
+    //         sent_gameover_code <= 1'b0;
+    //     end else begin
+    //         pc_tx_start <= 1'b0;
 
+    //         // When FSM goes back to IDLE, allow sending 'R' again next game
+    //         if (fsm_state == FSM_IDLE)
+    //             sent_gameover_code <= 1'b0;
+
+    //         if (fsm_state == FSM_FINISH && !sent_gameover_code && !tx_busy) begin
+    //             pc_tx_data         <= "R";   // ASCII 'R'
+    //             pc_tx_start        <= 1'b1;
+    //             sent_gameover_code <= 1'b1;
+    //         end
+    //         else if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
+    //             last_mole_pos <= molePositions;
+    //             pc_tx_data   <= "0" + mole_index;  // ASCII '0'..'4'
+    //             pc_tx_start  <= 1'b1;
+    //         end
+    //     end
+    // end
+
+    // DEBUG: Echo back any received byte from PC
     always @(posedge clock or negedge reset) begin
         if (!reset) begin
-            last_mole_pos      <= 5'b00000;
             pc_tx_start        <= 1'b0;
             pc_tx_data         <= 8'd0;
+            last_mole_pos      <= 5'b00000;  // keep these regs initialized
             sent_gameover_code <= 1'b0;
         end else begin
-            pc_tx_start <= 1'b0;
+            pc_tx_start <= 1'b0;  // default every cycle
 
-            // When FSM goes back to IDLE, allow sending 'R' again next game
-            if (fsm_state == FSM_IDLE)
-                sent_gameover_code <= 1'b0;
-
-            if (fsm_state == FSM_FINISH && !sent_gameover_code && !tx_busy) begin
-                pc_tx_data        <= "R";   // ASCII 'R'
-                pc_tx_start           <= 1'b1;
-                sent_gameover_code <= 1'b1;
-            end
-            else if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
-                last_mole_pos <= molePositions;
-                pc_tx_data   <= "0" + mole_index;  // ASCII '0'..'4'
-                pc_tx_start      <= 1'b1;
+            // Whenever we get a byte from PC and TX is free, send it back
+            if (rx_ready && !tx_busy) begin
+                pc_tx_data  <= rx_data;  // echo back the same byte
+                pc_tx_start <= 1'b1;
             end
         end
     end
