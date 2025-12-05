@@ -17,7 +17,7 @@ module score_counter (
         end else begin
             // each valid mole hit increments score by 1, max score is currently 63
             if (player_scored && score != 8'd200) 
-                score <= score + 6'd1;
+                score <= score + 8'd1;
         end
     end
 
