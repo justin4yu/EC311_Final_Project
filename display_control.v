@@ -25,10 +25,10 @@ module display_control (
             COUNTDOWN: display_data = {4'hC, 4'hD, 4'hF, 4'hF, 4'hF, 4'hF, 4'h0, countdown_timer};
             
             // PLAY: Blank Blank TIME_T TIME_O Blank Blank SCORE_T SCORE_O
-            PLAY:      display_data = {4'hF, 4'hF, game_timer_bcd, 4'hF, 4'hF, score_bcd};
+            PLAY:      display_data = {4'hF, 4'hF, game_timer_bcd[7:4], game_timer_bcd[3:0], 4'hF, 4'hF, score_bcd[7:4], score_bcd[3:0]};
             
             // GAMEOVER: E E E Blank Blank Blank SCORE_T SCORE_O
-            GAMEOVER:  display_data = {4'hE, 4'hE, 4'hE, 4'hF, 4'hF, 4'hF, score_bcd};
+            GAMEOVER:  display_data = {4'hE, 4'hE, 4'hE, 4'hF, 4'hF, 4'hF, score_bcd[7:4], score_bcd[3:0]};
             
             default:   display_data = 32'hFFFFFFFF;
         endcase
