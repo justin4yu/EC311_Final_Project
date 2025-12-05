@@ -105,14 +105,14 @@ module top_whackamole (
     // ----------------------------------------------------------------
     // 2) Debouncer setup + Initialize 5 mole buttons
     // ----------------------------------------------------------------
-    wire game_start; 
-    debouncer start_debouncer (
-        .clock     (clock),
-        .reset     (reset),
-        .buttonIn  (startButton),
+    // wire game_start; 
+    // debouncer start_debouncer (
+    //     .clock     (clock),
+    //     .reset     (reset),
+    //     .buttonIn  (startButton),
 
-        .buttonOut (game_start)
-    );
+    //     .buttonOut (game_start)
+    // );
 
     // Create a 5-bit wire to hold all 5 debounced mole button signals
     wire [4:0] moleButtonPulses;
@@ -138,7 +138,7 @@ module top_whackamole (
     wire       moleHit;
     
     wire player_scored;
-    wire start_game = game_start | start_from_pc; // OR the start button or PC start signal
+    wire start_game = start_from_pc; // OR the start button or PC start signal
 
     assign player_scored = moleHit | pc_hit; // OR the button or pc valid mole hit
     wire [1:0] fsm_state;  // FSM state exported from game_fsm
