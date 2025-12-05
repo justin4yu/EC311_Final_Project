@@ -80,6 +80,17 @@ module top_whackamole (
         .clkOut (incrementClock)
     );
 
+    // Edge detect for 1Hz clock within the 100MHz domain
+    reg inc_prev;
+    wire inc_rising;
+    always @(posedge clock or negedge reset) begin
+        if (!reset) begin
+            inc_prev <= 1'b0;
+        end else begin
+            inc_prev <= incrementClock;
+        end
+    end
+
     // 1kHz clock for segment display 
     wire displayClock;
     clock_divider #(
@@ -189,7 +200,6 @@ module top_whackamole (
         endcase
     end
 
-    // TEMPORARY REPLACEMENT: Disable UART sending for now to test other parts
     always @(posedge clock or negedge reset) begin
         if (!reset) begin
             last_mole_pos      <= 5'b00000;
@@ -216,10 +226,15 @@ module top_whackamole (
                 pc_tx_start  <= 1'b1;
             end
     
+            // to guarantee the PC can get a new mole index every second while game is running
             else if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
                 last_mole_pos <= molePositions;
                 pc_tx_data   <= "0" + mole_index;  // ASCII '0'..'4'
                 pc_tx_start  <= 1'b1;
+            end
+
+            else if (game_enable && inc_rising && !tx_busy) begin
+                last_mole_pos <= 5'b00000; // reset last mole pos when game not active
             end
         end
     end
