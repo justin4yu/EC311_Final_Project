@@ -15,7 +15,9 @@ module timer_counter #(
     always @(posedge clk or negedge reset) begin
         if (!reset) begin
             timer_reg <= MAX_TIME;
-        end else if (enable && timer_reg > 0) begin
+        end else if (!enable) begin
+            timer_reg <= MAX_TIME;
+        end else if (timer_reg > 0) begin
             timer_reg <= timer_reg - 1;
         end
     end
