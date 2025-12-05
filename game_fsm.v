@@ -36,6 +36,7 @@ module game_fsm #(parameter game_timer = 30)(
 
     // State transition logic
     always @(*) begin
+        next_state = current_state; // default to hold state
         case (current_state)
             IDLE:    if (startGame)     next_state = RUNNING;
             RUNNING: if (timer_expired) next_state = FINISH;

@@ -8,7 +8,8 @@ module top_whackamole (
     output wire [4:0] moleLED,      // 5 LEDs for moles respectively
     output wire [7:0] an,           // Output digit select for 7-seg display
     output wire [6:0] seg,          // digitSelect 
-    output wire       dp            
+    output wire       dp,          
+    output wire [2:0] current_stateLED  // export current FSM state for debugging;  
 );
 
     // ----------------------------------------------------------------
@@ -80,17 +81,6 @@ module top_whackamole (
         .clkOut (incrementClock)
     );
 
-    // Edge detect for 1Hz clock within the 100MHz domain
-    reg inc_prev;
-    wire inc_rising;
-    always @(posedge clock or negedge reset) begin
-        if (!reset) begin
-            inc_prev <= 1'b0;
-        end else begin
-            inc_prev <= incrementClock;
-        end
-    end
-
     // 1kHz clock for segment display 
     wire displayClock;
     clock_divider #(
@@ -151,8 +141,12 @@ module top_whackamole (
         .game_active   (game_enable), // game status output 
         .fsm_state     (fsm_state)    // NEW: export state to top-level
     );
+
+    assign current_stateLED[0] = (fsm_state == FSM_IDLE); 
+    assign current_stateLED[1] = (fsm_state == FSM_RUNNING);
+    assign current_stateLED[2] = (fsm_state == FSM_FINISH);
     
-        // ----------------------------------------------------------------
+    // ----------------------------------------------------------------
     // Connect Game Start
     // ----------------------------------------------------------------
     always @(posedge clock or negedge reset) begin
@@ -170,7 +164,6 @@ module top_whackamole (
     // ----------------------------------------------------------------
     // 4) Mole Generator & Button Press Detection
     // ----------------------------------------------------------------
-    
     wire [4:0] molePositions;
     mole_generator mole_gen (
         .clock         (clock),
