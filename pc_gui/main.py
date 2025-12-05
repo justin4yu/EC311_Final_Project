@@ -69,7 +69,7 @@ def main():
         # Read from serial port for mole position
         try:
             while serial.in_waiting > 0:
-                byte = serial.read(1)
+                byte = ser.read(1)
                 ascii_value = byte.decode('utf-8')
                 if ascii_value in ['0', '1', '2', '3', '4']:
                     mole_col = int(ascii_value)
