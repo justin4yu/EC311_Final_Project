@@ -11,13 +11,13 @@ module score_counter (
     always @(posedge clkIn or negedge reset) begin
         if (!reset) begin
             score <= 6'd0;
-        end else if (timer_expired || !game_active) begin
+        end else if (!game_active) begin
             // whenever the game is not running, keep score at 0
             score <= 6'd0;
         end else begin
             // each valid mole hit increments score by 1, max score is currently 63
-            if (player_scored && score != 8'd200) 
-                score <= score + 8'd1;
+            if (game_active && !timer_expired && player_scored) 
+                if (score < 8'd200) score <= score + 8'd1;
         end
     end
 
