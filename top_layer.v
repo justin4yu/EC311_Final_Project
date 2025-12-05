@@ -11,8 +11,8 @@ module top_whackamole (
     output wire       dp            
 );
 
-        // ----------------------------------------------------------------
-    // 10) UART Interface
+    // ----------------------------------------------------------------
+    // 0) UART Interface
     // ----------------------------------------------------------------
     wire [7:0] tx_data;
     reg        tx_start;
@@ -20,6 +20,11 @@ module top_whackamole (
 
     wire [7:0] rx_data;
     wire       rx_ready;
+
+    reg [4:0] last_mole_pos;
+    reg [7:0] tx_data_reg;   // holds the data to send via UART
+    reg [2:0] mole_index;
+    reg       sent_gameover_code;
 
     // UART transmitter: FPGA -> PC
     uart_tx #(
@@ -152,38 +157,6 @@ module top_whackamole (
         end
     end
 
-        reg sent_gameover_code;
-
-    always @(posedge clock or negedge reset) begin
-        if (!reset) begin
-            last_mole_pos       <= 5'b00000;
-            tx_start            <= 1'b0;
-            tx_data_reg         <= 8'd0;
-            sent_gameover_code  <= 1'b0;
-        end else begin
-            // Defaults every cycle
-            tx_start <= 1'b0;
-
-            // When FSM goes back to IDLE, allow sending 'R' again next game
-            if (fsm_state == FSM_IDLE)
-                sent_gameover_code <= 1'b0;
-
-            if (fsm_state == FSM_FINISH && !sent_gameover_code && !tx_busy) begin // send 'R' once when we enter FINISH state
-                tx_data_reg        <= "R";    // ASCII 'R'
-                tx_start           <= 1'b1;
-                sent_gameover_code <= 1'b1;
-            end
-
-            else if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin // send mole position when it changes
-
-                last_mole_pos <= molePositions;
-                tx_data_reg   <= "0" + mole_index;
-                tx_start      <= 1'b1;
-            end
-        end
-    end
-
-
     // ----------------------------------------------------------------
     // 4) Mole Generator & Button Press Detection
     // ----------------------------------------------------------------
@@ -206,10 +179,6 @@ module top_whackamole (
         // ----------------------------------------------------------------
     // Send mole position to PC when it changes
     // ----------------------------------------------------------------
-    reg [4:0] last_mole_pos;
-    reg [7:0] tx_data_reg; // holds the data that is being sent via UART
-    reg [2:0] mole_index;
-
     always @* begin
         case (molePositions)
             5'b00001: mole_index = 3'd0;
@@ -223,22 +192,35 @@ module top_whackamole (
 
     assign tx_data = tx_data_reg; 
 
-    always @(posedge clock or negedge reset) begin
+        always @(posedge clock or negedge reset) begin
         if (!reset) begin
-            last_mole_pos <= 5'b00000;
-            tx_start      <= 1'b0;
-            tx_data_reg   <= 8'd0;
+            last_mole_pos      <= 5'b00000;
+            tx_start           <= 1'b0;
+            tx_data_reg        <= 8'd0;
+            sent_gameover_code <= 1'b0;
         end else begin
-            tx_start <= 1'b0;  // default, and reset the tx_busy after each packet sent
+            // default each cycle
+            tx_start <= 1'b0;
 
-            // Send new mole position when it changes
-            if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
+            // When FSM goes back to IDLE, allow sending 'R' again next game
+            if (fsm_state == FSM_IDLE)
+                sent_gameover_code <= 1'b0;
+
+            // Priority 1: send 'R' once in FINISH state
+            if (fsm_state == FSM_FINISH && !sent_gameover_code && !tx_busy) begin
+                tx_data_reg        <= "R";   // ASCII 'R'
+                tx_start           <= 1'b1;
+                sent_gameover_code <= 1'b1;
+            end
+            // Priority 2: send mole position when it changes
+            else if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
                 last_mole_pos <= molePositions;
-                tx_data_reg   <= "0" + mole_index; // need to concatenate to feed UART 1 byte data
-                tx_start      <= 1'b1; // signal to start TX
+                tx_data_reg   <= "0" + mole_index;  // ASCII '0'..'4'
+                tx_start      <= 1'b1;
             end
         end
     end
+
 
     // ----------------------------------------------------------------
     // 5) Timer Counter (for game time - for display only right now)
