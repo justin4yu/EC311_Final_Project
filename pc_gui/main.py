@@ -155,6 +155,7 @@ def main():
     pygame.display.flip()
     play_again_clicked = False
     reset_from_fpga    = False
+    waiting            = True
     while waiting:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:

@@ -14,15 +14,14 @@ module top_whackamole (
     // ----------------------------------------------------------------
     // 0) UART Interface
     // ----------------------------------------------------------------
-    wire [7:0] tx_data;
-    reg        tx_start;
+    reg        pc_tx_start;
     wire       tx_busy;
 
     wire [7:0] rx_data;
     wire       rx_ready;
 
     reg [4:0] last_mole_pos;
-    reg [7:0] tx_data_reg;   // holds the data to send via UART
+    reg [7:0] pc_tx_data;   // holds the data to send via UART
     reg [2:0] mole_index;
     reg       sent_gameover_code;
 
@@ -32,8 +31,8 @@ module top_whackamole (
     ) uart_tx_inst (
         .clock   (clock),
         .reset   (reset),
-        .tx_start(tx_start),
-        .tx_data (tx_data),
+        .tx_start(pc_tx_start),
+        .tx_data (pc_tx_data),
         .uart_tx (uart_tx_pin), // connect to top-level output pin
         .uart_tx_busy (tx_busy)
     );
@@ -190,17 +189,17 @@ module top_whackamole (
         endcase
     end
 
-    assign tx_data = tx_data_reg; 
+    assign pc_tx_data = pc_tx_reg; 
 
         always @(posedge clock or negedge reset) begin
         if (!reset) begin
             last_mole_pos      <= 5'b00000;
-            tx_start           <= 1'b0;
-            tx_data_reg        <= 8'd0;
+            pc_tx_start        <= 1'b0;
+            pc_tx_data         <= 8'd0;
             sent_gameover_code <= 1'b0;
         end else begin
             // default each cycle
-            tx_start <= 1'b0;
+            pc_tx_start <= 1'b0;
 
             // When FSM goes back to IDLE, allow sending 'R' again next game
             if (fsm_state == FSM_IDLE)
@@ -208,15 +207,15 @@ module top_whackamole (
 
             // Priority 1: send 'R' once in FINISH state
             if (fsm_state == FSM_FINISH && !sent_gameover_code && !tx_busy) begin
-                tx_data_reg        <= "R";   // ASCII 'R'
-                tx_start           <= 1'b1;
+                pc_tx_data        <= "R";   // ASCII 'R'
+                pc_tx_start           <= 1'b1;
                 sent_gameover_code <= 1'b1;
             end
             // Priority 2: send mole position when it changes
             else if (game_enable && (molePositions != last_mole_pos) && !tx_busy) begin
                 last_mole_pos <= molePositions;
-                tx_data_reg   <= "0" + mole_index;  // ASCII '0'..'4'
-                tx_start      <= 1'b1;
+                pc_tx_data   <= "0" + mole_index;  // ASCII '0'..'4'
+                pc_tx_start      <= 1'b1;
             end
         end
     end
