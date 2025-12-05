@@ -49,7 +49,7 @@ module uart_tx #(
 
                 if (tx_start) begin
                     tx_shift_reg <= tx_data;
-                    tx_busy      <= 1'b1;
+                    uart_tx_busy      <= 1'b1;
                     tx_state     <= TX_START_BIT;
                 end else begin
                     tx_state       <= TX_IDLE;
