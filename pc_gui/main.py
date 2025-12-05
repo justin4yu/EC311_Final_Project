@@ -78,6 +78,11 @@ def main():
                     mole_col = int(ascii_value)
                     mole_position = (0, mole_col)
                     mole_visible = True
+
+                elif ascii_value == "H":  # Hit acknowledgment from FPGA
+                    score += 1
+                    print(f"Score updated to: {score}")
+
                 elif ascii_value == 'R':   # FPGA reset signal
                     print("Got R from FPGA: restarting game on PC")
                     running = False
@@ -101,7 +106,6 @@ def main():
                     clicked_cell = get_cell_from_mouse_pos(mouse_pos)
 
                     if clicked_cell == mole_position:
-                        score += 1
                         print(f"Hit mole #{clicked_cell[1]}")
                         mole_visible = False  # hide mole until next UART update
 
