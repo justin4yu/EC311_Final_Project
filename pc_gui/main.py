@@ -92,15 +92,15 @@ def main():
                     mouse_pos = pygame.mouse.get_pos()
                     clicked_cell = get_cell_from_mouse_pos(mouse_pos)
 
-                    # clicked_cell is (row, col) – we compare to mole_position
                     if clicked_cell == mole_position:
                         score += 1
                         print(f"Hit mole #{clicked_cell[1]}")
-                        mole_visible = False  # hide mole until next timer
+                        mole_visible = False  # hide mole until next UART update
 
-                        # ASCII 'H' is sent to FPGA to indicate a hit
+                        # ONLY send 'H' to FPGA on a real hit
                         try:
                             ser.write(b"H")
+                            print("Sent H to FPGA")
                         except Exception as e:
                             print(f"Error writing to serial: {e}")
                         ''' End revision '''
@@ -159,27 +159,40 @@ def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 waiting = False
-                play_again_clicked = False  # exit game instead
+                play_again_clicked = False
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                # check if click is inside the Play Again button
                 if play_again_rect.collidepoint(event.pos):
                     play_again_clicked = True
                     waiting = False
                     try:
                         ser.write(b"S")   # 'S' = Start
-                        print("Sent H to FPGA")
+                        print("Sent S to FPGA (Play Again clicked)")
                     except Exception as e:
                         print(f"Error writing start to serial: {e}")
 
+        # 👇 NEW: check if FPGA wants us to restart
+        try:
+            while ser.in_waiting > 0:
+                byte = ser.read(1)
+                ascii_value = byte.decode('utf-8', errors='ignore')
+                if ascii_value == 'R':   # FPGA reset signal
+                    print("Got R from FPGA: restarting game on PC")
+                    reset_from_fpga = True
+                    waiting = False
+                    break
+        except Exception as e:
+            print(f"Error reading from serial during game over: {e}")
+
         pygame.time.delay(10)
 
-    return play_again_clicked
+    return play_again_clicked or reset_from_fpga
 
 if __name__ == "__main__":
     keep_playing = True
     while keep_playing:
-        keep_playing = main()   # main() returns True if Play Again clicked, else False
+        keep_playing = main()   # main() restarts if Play Again or FPGA reset
 
     pygame.quit()
+
 
