@@ -68,7 +68,7 @@ def main():
         '''Need to revise so that the mole generation comes from the recieve UART bytes from FPGA'''
         # Read from serial port for mole position
         try:
-            while serial.in_waiting > 0:
+            while ser.in_waiting > 0:
                 byte = ser.read(1)
                 ascii_value = byte.decode('utf-8')
                 if ascii_value in ['0', '1', '2', '3', '4']:
