@@ -151,6 +151,26 @@ module top_whackamole (
             end
         end
     end
+
+        reg sent_gameover_code;
+
+    always @(posedge clock or negedge reset) begin
+        if (!reset) begin
+            sent_gameover_code <= 1'b0;
+        end else begin
+            // Clear flag when game returns to IDLE
+            if (fsm_state == FSM_IDLE)
+                sent_gameover_code <= 1'b0;
+
+            // When game finishes, send 'R' once
+            if (fsm_state == FSM_FINISH && !sent_gameover_code && !tx_busy) begin
+                tx_data_reg        <= "R";  // ASCII 'R'
+                tx_start           <= 1'b1;
+                sent_gameover_code <= 1'b1;
+            end
+        end
+    end
+
     // ----------------------------------------------------------------
     // 4) Mole Generator & Button Press Detection
     // ----------------------------------------------------------------

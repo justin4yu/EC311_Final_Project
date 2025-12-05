@@ -154,7 +154,7 @@ def main():
 
     pygame.display.flip()
     play_again_clicked = False
-    waiting = True
+    reset_from_fpga    = False
     while waiting:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -171,7 +171,6 @@ def main():
                     except Exception as e:
                         print(f"Error writing start to serial: {e}")
 
-        # 👇 NEW: check if FPGA wants us to restart
         try:
             while ser.in_waiting > 0:
                 byte = ser.read(1)
